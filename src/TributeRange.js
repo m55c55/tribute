@@ -561,12 +561,20 @@ class TributeRange {
         let sel = this.getWindowSelection()
 
         range = this.getDocument().createRange()
-        range.setStart(sel.anchorNode, selectedNodePosition)
-        range.setEnd(sel.anchorNode, selectedNodePosition)
 
-        range.collapse(false)
-
+        // setStart/setEnd are inconsistently working in Firefox/Chrome if
+        // the selectedNodePosition is 0. In that case, the selectNodeContents works well
+        if (selectedNodePosition > 0) {
+            range.setStart(sel.anchorNode, selectedNodePosition);
+            range.setEnd(sel.anchorNode, selectedNodePosition)
+          } else {
+            range.selectNodeContents(sel.anchorNode);
+          }
+  
+        // collapse range after rect was retrieved
         let rect = range.getBoundingClientRect()
+        range.collapse(false)          
+
         let doc = document.documentElement
         let windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
         let windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
